@@ -12,7 +12,8 @@
         var oa = oaRange.getSelection(document.getElementById('draggable'));
         var range = oaRange.getRange(oa);
         console.log('selected: ', range.toString());
-
+        //make selection visible to user
+        window.getSelection().addRange(range);
 
         //used for text selection
         document.addEventListener('mouseup', function(e){
