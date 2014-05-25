@@ -4,8 +4,26 @@
     <link rel="stylesheet" href="style/style.css">
     <script src="bundle.js"></script>
     <script>
-      var annotator = require('annotator');
-      
+      var oaRange = require('oa-range');
+
+      document.addEventListener('DOMContentLoaded', function(e){      
+
+        //used if draggable
+        var oa = oaRange.getSelection(document.getElementById('draggable'));
+        var range = oaRange.getRange(oa);
+        console.log('selected: ', range.toString());
+
+
+        //used for text selection
+        document.addEventListener('mouseup', function(e){
+          var oa = oaRange.getSelection();
+          if(oa){
+            console.log('oa: ', oa);
+            var range = oaRange.getRange(oa);
+            console.log('selected: ', range.toString());
+          }
+        });
+      });
     </script>
   </head>
   <body>
@@ -36,7 +54,7 @@
       ultrices quam ultricies, volutpat augue.
     </p>
 
-    <p>
+    <p id="draggable">
       <span>
         <span>a</span>
         <span>b</span>

@@ -1,15 +1,15 @@
 {
-  "name": "annotator",
+  "name": "oa-range",
   "version": "0.0.0",
-  "description": "vanilla JS annotator module",
+  "description": "vanilla JS open annotation component, get range from DOM selection",
   "main": "index.js",
   "scripts": {
     "build": "node_modules/.bin/browserify index.js | node_modules/.bin/uglifyjs -mc > bundle.js",
-    "debug": "node_modules/.bin/watchify -r ./index.js:annotator -o bundle.js -dv"
+    "debug": "node_modules/.bin/watchify -r ./index.js:oa-range -o bundle.js -dv"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/standard-analytics/annotator.git"
+    "url": "git://github.com/standard-analytics/oa-range.git"
   },
   "keywords": [
     "open",
@@ -18,9 +18,9 @@
   "author": "Sebastien Ballesteros",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/standard-analytics/annotator/issues"
+    "url": "https://github.com/standard-analytics/oa-range/issues"
   },
-  "homepage": "https://github.com/standard-analytics/annotator",
+  "homepage": "https://github.com/standard-analytics/oa-range",
   "devDependencies": {
     "uglify-js": "^2.4.13",
     "watchify": "^0.10.1",
