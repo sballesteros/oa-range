@@ -1,7 +1,7 @@
-annotator
-=========
+oa-range
+========
 
-vanilla JS annotator module
+vanilla JS open annotation component, get range from DOM selection
 
 ##test
 
