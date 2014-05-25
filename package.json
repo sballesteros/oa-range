@@ -1,0 +1,32 @@
+{
+  "name": "annotator",
+  "version": "0.0.0",
+  "description": "vanilla JS annotator module",
+  "main": "index.js",
+  "scripts": {
+    "build": "node_modules/.bin/browserify index.js | node_modules/.bin/uglifyjs -mc > bundle.js",
+    "debug": "node_modules/.bin/watchify -r ./index.js:annotator -o bundle.js -dv"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/standard-analytics/annotator.git"
+  },
+  "keywords": [
+    "open",
+    "annotation"
+  ],
+  "author": "Sebastien Ballesteros",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/standard-analytics/annotator/issues"
+  },
+  "homepage": "https://github.com/standard-analytics/annotator",
+  "devDependencies": {
+    "uglify-js": "^2.4.13",
+    "watchify": "^0.10.1",
+    "browserify": "^4.1.5"
+  },
+  "dependencies": {
+    "element-xpath": "standard-analytics/element-xpath"
+  }
+}
