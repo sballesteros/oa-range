@@ -98,8 +98,6 @@ exports.getRange = function(oaSelection){
 exports.highlight = function(oa, style){
 
   var range = oa.range;
-
-  var bound = range.getBoundingClientRect();
   var rects = range.getClientRects();
 
   var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
@@ -143,6 +141,7 @@ exports.highlight = function(oa, style){
 //  var rects = Array.prototype.filter.call(rects, function(x){return x.height === heightMostPopular;});
 //  var tops = _.uniq(rects.map(function(x){return x.top;}));
 //
+//  var bound = range.getBoundingClientRect();
 //  var myRects = {};
 //  tops.forEach(function(top){
 //    myRects[top.toString()] = {left: bound.right, right: bound.left}; //will be replaced by smallest left and largest right

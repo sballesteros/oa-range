@@ -1,6 +1,6 @@
 {
   "name": "oa-range",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "vanilla JS open annotation component, get range from DOM selection",
   "main": "index.js",
   "scripts": {
