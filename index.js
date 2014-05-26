@@ -4,8 +4,8 @@ exports.getSelection = function($el){
   var range;
 
   if($el){
-    range = new Range();
-    range.selectNode($el);
+    range = document.createRange();
+    range.selectNodeContents($el);
   } else{
     var sel = window.getSelection();
     if(!sel.isCollapsed){
@@ -16,6 +16,7 @@ exports.getSelection = function($el){
   if(!range){
     return;
   }
+
 
   var $ancestor = range.commonAncestorContainer;
   if ($ancestor.nodeType === 3) {
@@ -41,33 +42,73 @@ exports.getSelection = function($el){
   }
 
   return {
-    xPath: getElementXpath($el),
-    start: start,
-    end: end,
-    startOffset: range.startOffset,
-    endOffset: range.endOffset
+    range: range,
+    selection: {
+      xPath: getElementXpath($el),
+      start: start,
+      end: end,
+      startOffset: range.startOffset,
+      endOffset: range.endOffset
+    }
   };
 };
 
-exports.getRange = function(oa){
-  var range = new Range();
-  var $el = _getElementByXPath(oa.xPath);
+exports.getRange = function(oaSelection){
+  var range = document.createRange();
+  var $el = _getElementByXPath(oaSelection.xPath);
   var startNode;
 
-  if(oa.start !== undefined){
-    startNode = _getNodeByOffset($el, oa.start);
+  if(oaSelection.start !== undefined){
+    startNode = _getNodeByOffset($el, oaSelection.start);
   } else {
     startNode = $el;
   }
-  range.setStart(startNode, oa.startOffset);
+  range.setStart(startNode, oaSelection.startOffset);
 
-  if(oa.end !== undefined){
-    range.setEnd(_getNodeByOffset($el, oa.end), oa.endOffset);
+  if(oaSelection.end !== undefined){
+    range.setEnd(_getNodeByOffset($el, oaSelection.end), oaSelection.endOffset);
   } else {
-    range.setEnd(startNode, oa.endOffset);
+    range.setEnd(startNode, oaSelection.endOffset);
   }
 
   return range;
+};
+
+exports.highlight = function(range, style){
+
+  //  var rect = range.getBoundingClientRect();
+
+  var rects = range.getClientRects();
+  for (var i = 0; i != rects.length; i++) {
+    var rect = rects[i];
+    console.log(rect);
+
+    var highlightDiv = document.createElement('div');
+
+    var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+    var scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft;
+
+    highlightDiv.style.top = (rect.top + scrollTop) + 'px';
+    highlightDiv.style.left = (rect.left + scrollLeft) + 'px';
+    highlightDiv.style.width = rect.width + 'px';
+    highlightDiv.style.height = rect.height + 'px';
+    highlightDiv.style.zIndex = -1;
+
+    highlightDiv.style.margin = highlightDiv.style.padding = '0';
+    highlightDiv.style.position = 'absolute';
+
+    if(style){
+      for(var key in style){
+        highlightDiv.style[key] = style[key];
+      }
+    } else {
+      highlightDiv.style.backgroundColor = 'rgba(122,122,122,0.2)';
+    }
+
+    document.body.appendChild(highlightDiv);
+  }
+
+  //TODO: return divs
 };
 
 
