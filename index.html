@@ -9,26 +9,40 @@
       document.addEventListener('DOMContentLoaded', function(e){      
 
         //used if draggable
-        var oa = oaRange.getSelection(document.getElementById('draggable'));
+        var oa = oaRange.getOa(document.getElementById('draggable'));
         var range = oaRange.getRange(oa.selection);
         console.log('selected: ', range.toString());
         //make selection visible to user
         window.getSelection().addRange(range);
+      
+        var oas = [];
 
         //used for text selection
         document.addEventListener('mouseup', function(e){
-          var oa = oaRange.getSelection();
+          var oa = oaRange.getOa();
           if(oa){
+            oas.push(oa);
             console.log('oa: ', oa);
             var range = oaRange.getRange(oa.selection);
             console.log('selected: ', range.toString());
-            oaRange.highlight(range);
+            oaRange.highlight(oa);
           }
         });
+
+        //remove highlights
+        var $delete = document.getElementById('delete');
+        $delete.addEventListener('click', function(e){
+           oas.forEach(function(oa){
+             oaRange.unhighlight(oa);
+           });
+        });
+
       });
     </script>
   </head>
   <body>
+
+    <button id="delete">unhiglight</button>
 
     <p> 
       Lorem ipsum <span>dolor</span> <em>sit</em> amet,

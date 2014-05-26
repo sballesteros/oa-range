@@ -27,6 +27,7 @@
     "browserify": "^4.1.5"
   },
   "dependencies": {
-    "element-xpath": "standard-analytics/element-xpath"
+    "element-xpath": "standard-analytics/element-xpath",
+    "underscore": "^1.6.0"
   }
 }

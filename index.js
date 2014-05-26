@@ -1,12 +1,16 @@
-var getElementXpath = require('element-xpath');
+var getElementXpath = require('element-xpath')
+  , _ = require('underscore')
+  , crypto = require('crypto');
 
-exports.getSelection = function($el){
+exports.getOa = function($el, id){
   var range;
+
+
 
   if($el){
     range = document.createRange();
     range.selectNodeContents($el);
-  } else{
+  } else {
     var sel = window.getSelection();
     if(!sel.isCollapsed){
       range = sel.getRangeAt(0);
@@ -16,7 +20,6 @@ exports.getSelection = function($el){
   if(!range){
     return;
   }
-
 
   var $ancestor = range.commonAncestorContainer;
   if ($ancestor.nodeType === 3) {
@@ -33,7 +36,6 @@ exports.getSelection = function($el){
 
   while (node = it.nextNode()) {
     if (node === range.startContainer){
-      console.log(node, i);
       start = i;
     } else if (node === range.endContainer){
       end = i;
@@ -41,7 +43,7 @@ exports.getSelection = function($el){
     i++;
   }
 
-  return {
+  var oa = {
     range: range,
     selection: {
       xPath: getElementXpath($el),
@@ -51,7 +53,22 @@ exports.getSelection = function($el){
       endOffset: range.endOffset
     }
   };
+
+  if(id){
+    oa.id = id;
+  } else {
+    var toHash = Object.keys(oa.selection)
+      .sort()
+      .map(function(x){return oa.selection[x];})
+      .filter(function(x){return x;})
+      .join('-');
+
+    oa.id = crypto.createHash('sha1').update(toHash).digest('hex');
+  }
+
+  return oa;
 };
+
 
 exports.getRange = function(oaSelection){
   var range = document.createRange();
@@ -74,24 +91,60 @@ exports.getRange = function(oaSelection){
   return range;
 };
 
-exports.highlight = function(range, style){
 
-  //  var rect = range.getBoundingClientRect();
+/**
+ * Note: the highlights will be out of place if the user resizes or zooms
+ */
+exports.highlight = function(oa, style){
 
+  var range = oa.range;
+
+  var bound = range.getBoundingClientRect();
   var rects = range.getClientRects();
-  for (var i = 0; i != rects.length; i++) {
+
+  //rects are potentialy overlapping: get minimal number of rectangles
+
+  //only keep rect of same height (most frequent).
+  var heights = Array.prototype.map.call(rects, function(x){return x.height;});
+  var counts = _.countBy(heights, function(x) { return x; });
+  var sorted = Object.keys(counts).sort(function(a, b){return parseInt(counts[b],10)-parseInt(counts[a],10);}); //most frequent first
+  var heightMostPopular = parseInt(sorted[0], 10);
+
+  var rects = Array.prototype.filter.call(rects, function(x){return x.height === heightMostPopular;});
+  var tops = _.uniq(rects.map(function(x){return x.top;}));
+
+  var myRects = {};
+  tops.forEach(function(top){
+    myRects[top.toString()] = {left: bound.right, right: bound.left}; //will be replaced by smallest left and largest right
+  });
+
+  for (var i = 0; i < rects.length; i++) {
     var rect = rects[i];
-    console.log(rect);
+    var key = rect.top.toString();
+
+    myRects[key].top = rect.top;
+    myRects[key].height = rect.height;
+
+    if(rect.left < myRects[key].left){
+      myRects[key].left = rect.left;
+    }
+    if(rect.right > myRects[key].right){
+      myRects[key].right = rect.right;
+    }
+  }
+
+  var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+  var scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft;
+
+  for(var key in myRects) {
+    var myrect = myRects[key];
 
     var highlightDiv = document.createElement('div');
-
-    var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-    var scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft;
-
-    highlightDiv.style.top = (rect.top + scrollTop) + 'px';
-    highlightDiv.style.left = (rect.left + scrollLeft) + 'px';
-    highlightDiv.style.width = rect.width + 'px';
-    highlightDiv.style.height = rect.height + 'px';
+    highlightDiv.className = 'oa-highlight ' +  oa.id;
+    highlightDiv.style.top = (myrect.top + scrollTop) + 'px';
+    highlightDiv.style.left = (myrect.left + scrollLeft) + 'px';
+    highlightDiv.style.width = (myrect.right-myrect.left) + 'px';
+    highlightDiv.style.height = myrect.height + 'px';
     highlightDiv.style.zIndex = -1;
 
     highlightDiv.style.margin = highlightDiv.style.padding = '0';
@@ -108,7 +161,14 @@ exports.highlight = function(range, style){
     document.body.appendChild(highlightDiv);
   }
 
-  //TODO: return divs
+  //TODO: return array divs
+};
+
+exports.unhighlight = function(oa){
+  var highlightDivs = document.getElementsByClassName(oa.id);
+  while(highlightDivs.length){
+    document.body.removeChild(highlightDivs[0]);
+  }
 };
 
 
