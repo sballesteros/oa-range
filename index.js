@@ -5,8 +5,6 @@ var getElementXpath = require('element-xpath')
 exports.getOa = function($el, id){
   var range;
 
-
-
   if($el){
     range = document.createRange();
     range.selectNodeContents($el);
@@ -94,6 +92,8 @@ exports.getRange = function(oaSelection){
 
 /**
  * Note: the highlights will be out of place if the user resizes or zooms
+ * range.getClientRects() is a bit buggy: http://stackoverflow.com/questions/7232723/semantics-of-clientrect-from-getclientrects-in-webkit-browsers
+ * elegant alternative http://stackoverflow.com/questions/6972581/javascript-quandary-creating-a-highlighter-pen-tool-almost-there/6972694#6972694 BUT it adds span in DOM so no.
  */
 exports.highlight = function(oa, style){
 
@@ -102,49 +102,17 @@ exports.highlight = function(oa, style){
   var bound = range.getBoundingClientRect();
   var rects = range.getClientRects();
 
-  //rects are potentialy overlapping: get minimal number of rectangles
-
-  //only keep rect of same height (most frequent).
-  var heights = Array.prototype.map.call(rects, function(x){return x.height;});
-  var counts = _.countBy(heights, function(x) { return x; });
-  var sorted = Object.keys(counts).sort(function(a, b){return parseInt(counts[b],10)-parseInt(counts[a],10);}); //most frequent first
-  var heightMostPopular = parseInt(sorted[0], 10);
-
-  var rects = Array.prototype.filter.call(rects, function(x){return x.height === heightMostPopular;});
-  var tops = _.uniq(rects.map(function(x){return x.top;}));
-
-  var myRects = {};
-  tops.forEach(function(top){
-    myRects[top.toString()] = {left: bound.right, right: bound.left}; //will be replaced by smallest left and largest right
-  });
-
-  for (var i = 0; i < rects.length; i++) {
-    var rect = rects[i];
-    var key = rect.top.toString();
-
-    myRects[key].top = rect.top;
-    myRects[key].height = rect.height;
-
-    if(rect.left < myRects[key].left){
-      myRects[key].left = rect.left;
-    }
-    if(rect.right > myRects[key].right){
-      myRects[key].right = rect.right;
-    }
-  }
-
   var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
   var scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft;
 
-  for(var key in myRects) {
-    var myrect = myRects[key];
-
+  for (var i = 0; i < rects.length; i++) {
+    var rect = rects[i];
     var highlightDiv = document.createElement('div');
     highlightDiv.className = 'oa-highlight ' +  oa.id;
-    highlightDiv.style.top = (myrect.top + scrollTop) + 'px';
-    highlightDiv.style.left = (myrect.left + scrollLeft) + 'px';
-    highlightDiv.style.width = (myrect.right-myrect.left) + 'px';
-    highlightDiv.style.height = myrect.height + 'px';
+    highlightDiv.style.top = (rect.top + scrollTop) + 'px';
+    highlightDiv.style.left = (rect.left + scrollLeft) + 'px';
+    highlightDiv.style.width = rect.width + 'px';
+    highlightDiv.style.height = rect.height + 'px';
     highlightDiv.style.zIndex = -1;
 
     highlightDiv.style.margin = highlightDiv.style.padding = '0';
@@ -161,7 +129,68 @@ exports.highlight = function(oa, style){
     document.body.appendChild(highlightDiv);
   }
 
-  //TODO: return array divs
+//  TODO: return array divs
+
+//Potential workaround for chrome bugs:
+//  //rects are potentialy overlapping: get minimal number of rectangles (necessary as range.getClientRects() is a bit buggy see http://stackoverflow.com/questions/7232723/semantics-of-clientrect-from-getclientrects-in-webkit-browsers)
+//
+//  //only keep rect of same height (most frequent).
+//  var heights = Array.prototype.map.call(rects, function(x){return x.height;});
+//  var counts = _.countBy(heights, function(x) { return x; });
+//  var sorted = Object.keys(counts).sort(function(a, b){return parseInt(counts[b],10)-parseInt(counts[a],10);}); //most frequent first
+//  var heightMostPopular = parseInt(sorted[0], 10);
+//
+//  var rects = Array.prototype.filter.call(rects, function(x){return x.height === heightMostPopular;});
+//  var tops = _.uniq(rects.map(function(x){return x.top;}));
+//
+//  var myRects = {};
+//  tops.forEach(function(top){
+//    myRects[top.toString()] = {left: bound.right, right: bound.left}; //will be replaced by smallest left and largest right
+//  });
+//
+//  for (var i = 0; i < rects.length; i++) {
+//    var rect = rects[i];
+//    var key = rect.top.toString();
+//
+//    myRects[key].top = rect.top;
+//    myRects[key].height = rect.height; //height are all the same so OK.
+//
+//    if(rect.left < myRects[key].left){
+//      myRects[key].left = rect.left;
+//    }
+//    if(rect.right > myRects[key].right){
+//      myRects[key].right = rect.right;
+//    }
+//  }
+//
+//  //draw the rectangles
+//
+//
+//  for(var key in myRects) {
+//    var myrect = myRects[key];
+//
+//    var highlightDiv = document.createElement('div');
+//    highlightDiv.className = 'oa-highlight ' +  oa.id;
+//    highlightDiv.style.top = (myrect.top + scrollTop) + 'px';
+//    highlightDiv.style.left = (myrect.left + scrollLeft) + 'px';
+//    highlightDiv.style.width = (myrect.right-myrect.left) + 'px';
+//    highlightDiv.style.height = myrect.height + 'px';
+//    highlightDiv.style.zIndex = -1;
+//
+//    highlightDiv.style.margin = highlightDiv.style.padding = '0';
+//    highlightDiv.style.position = 'absolute';
+//
+//    if(style){
+//      for(var key in style){
+//        highlightDiv.style[key] = style[key];
+//      }
+//    } else {
+//      highlightDiv.style.backgroundColor = 'rgba(122,122,122,0.2)';
+//    }
+//
+//    document.body.appendChild(highlightDiv);
+//  }
+
 };
 
 exports.unhighlight = function(oa){
