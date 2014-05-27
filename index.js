@@ -1,6 +1,26 @@
-var getElementXpath = require('element-xpath')
-  , _ = require('underscore')
+var _ = require('underscore')
   , crypto = require('crypto');
+
+//var getElementXpath = require('element-xpath');
+
+// more reliable than getElementXpath($el)
+//taken from http://stackoverflow.com/questions/2631820/im-storing-click-coordinates-in-my-db-and-then-reloading-them-later-and-showing/2631931#2631931
+function getElementXpath($el) {
+  if ($el.id!=='')
+    return 'id("'+$el.id+'")';
+  if ($el===document.body)
+    return $el.tagName;
+
+  var ix= 0;
+  var siblings= $el.parentNode.childNodes;
+  for (var i= 0; i<siblings.length; i++) {
+    var sibling= siblings[i];
+    if (sibling===$el)
+      return getElementXpath($el.parentNode)+'/'+$el.tagName+'['+(ix+1)+']';
+    if (sibling.nodeType===1 && sibling.tagName===$el.tagName)
+      ix++;
+  }
+};
 
 exports.getOa = function($el, id){
   var range;
