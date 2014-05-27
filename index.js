@@ -95,20 +95,31 @@ exports.getRange = function(oaSelection){
  * range.getClientRects() is a bit buggy: http://stackoverflow.com/questions/7232723/semantics-of-clientrect-from-getclientrects-in-webkit-browsers
  * elegant alternative http://stackoverflow.com/questions/6972581/javascript-quandary-creating-a-highlighter-pen-tool-almost-there/6972694#6972694 BUT it adds span in DOM so no.
  */
-exports.highlight = function(oa, style){
+exports.highlight = function(oa, $root, style){
 
   var range = oa.range;
   var rects = range.getClientRects();
 
-  var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-  var scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft;
+  var scrollTop, scrollLeft, offsetTop, offsetLeft;
+  if($root){
+    scrollTop = $root.scrollTop;
+    scrollLeft = $root.scrollLeft;
+    var rootRect = $root.getBoundingClientRect();
+    offsetTop = rootRect.top;
+    offsetLeft = rootRect.left;
+  } else {
+    scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+    scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft;
+    offsetTop = 0;
+    offsetLeft = 0;
+  }
 
   for (var i = 0; i < rects.length; i++) {
     var rect = rects[i];
     var highlightDiv = document.createElement('div');
     highlightDiv.className = 'oa-highlight ' +  oa.id;
-    highlightDiv.style.top = (rect.top + scrollTop) + 'px';
-    highlightDiv.style.left = (rect.left + scrollLeft) + 'px';
+    highlightDiv.style.top = (rect.top + scrollTop - offsetTop) + 'px';
+    highlightDiv.style.left = (rect.left + scrollLeft - offsetLeft) + 'px';
     highlightDiv.style.width = rect.width + 'px';
     highlightDiv.style.height = rect.height + 'px';
     highlightDiv.style.zIndex = -1;
@@ -124,7 +135,11 @@ exports.highlight = function(oa, style){
       highlightDiv.style.backgroundColor = 'rgba(122,122,122,0.2)';
     }
 
-    document.body.appendChild(highlightDiv);
+    if($root){
+      $root.appendChild(highlightDiv);
+    } else {
+      document.body.appendChild(highlightDiv);
+    }
   }
 
 //  TODO: return array divs
