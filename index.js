@@ -134,103 +134,45 @@ exports.highlight = function(oa, $root, style){
     offsetLeft = 0;
   }
 
+  var $markers = [];
+
   for (var i = 0; i < rects.length; i++) {
     var rect = rects[i];
-    var highlightDiv = document.createElement('div');
-    highlightDiv.className = 'oa-highlight ' +  oa.id;
-    highlightDiv.style.top = (rect.top + scrollTop - offsetTop) + 'px';
-    highlightDiv.style.left = (rect.left + scrollLeft - offsetLeft) + 'px';
-    highlightDiv.style.width = rect.width + 'px';
-    highlightDiv.style.height = rect.height + 'px';
-    highlightDiv.style.zIndex = -1;
+    var $highlightDiv = document.createElement('div');
+    $highlightDiv.className = 'oa-highlight ' +  oa.id;
+    $highlightDiv.style.top = (rect.top + scrollTop - offsetTop) + 'px';
+    $highlightDiv.style.left = (rect.left + scrollLeft - offsetLeft) + 'px';
+    $highlightDiv.style.width = rect.width + 'px';
+    $highlightDiv.style.height = rect.height + 'px';
+    $highlightDiv.style.zIndex = -1;
 
-    highlightDiv.style.margin = highlightDiv.style.padding = '0';
-    highlightDiv.style.position = 'absolute';
+    $highlightDiv.style.margin = $highlightDiv.style.padding = '0';
+    $highlightDiv.style.position = 'absolute';
 
     if(style){
       for(var key in style){
-        highlightDiv.style[key] = style[key];
+        $highlightDiv.style[key] = style[key];
       }
     } else {
-      highlightDiv.style.backgroundColor = 'rgba(122,122,122,0.2)';
+      $highlightDiv.style.backgroundColor = 'rgba(122,122,122,0.2)';
     }
 
     if($root){
-      $root.appendChild(highlightDiv);
+      $root.appendChild($highlightDiv);
     } else {
-      document.body.appendChild(highlightDiv);
+      document.body.appendChild($highlightDiv);
     }
+
+    $markers.push($highlightDiv);
   }
 
-//  TODO: return array divs
-
-//Potential workaround for chrome bugs:
-//  //rects are potentialy overlapping: get minimal number of rectangles (necessary as range.getClientRects() is a bit buggy see http://stackoverflow.com/questions/7232723/semantics-of-clientrect-from-getclientrects-in-webkit-browsers)
-//
-//  //only keep rect of same height (most frequent).
-//  var heights = Array.prototype.map.call(rects, function(x){return x.height;});
-//  var counts = _.countBy(heights, function(x) { return x; });
-//  var sorted = Object.keys(counts).sort(function(a, b){return parseInt(counts[b],10)-parseInt(counts[a],10);}); //most frequent first
-//  var heightMostPopular = parseInt(sorted[0], 10);
-//
-//  var rects = Array.prototype.filter.call(rects, function(x){return x.height === heightMostPopular;});
-//  var tops = _.uniq(rects.map(function(x){return x.top;}));
-//
-//  var bound = range.getBoundingClientRect();
-//  var myRects = {};
-//  tops.forEach(function(top){
-//    myRects[top.toString()] = {left: bound.right, right: bound.left}; //will be replaced by smallest left and largest right
-//  });
-//
-//  for (var i = 0; i < rects.length; i++) {
-//    var rect = rects[i];
-//    var key = rect.top.toString();
-//
-//    myRects[key].top = rect.top;
-//    myRects[key].height = rect.height; //height are all the same so OK.
-//
-//    if(rect.left < myRects[key].left){
-//      myRects[key].left = rect.left;
-//    }
-//    if(rect.right > myRects[key].right){
-//      myRects[key].right = rect.right;
-//    }
-//  }
-//
-//  //draw the rectangles
-//
-//
-//  for(var key in myRects) {
-//    var myrect = myRects[key];
-//
-//    var highlightDiv = document.createElement('div');
-//    highlightDiv.className = 'oa-highlight ' +  oa.id;
-//    highlightDiv.style.top = (myrect.top + scrollTop) + 'px';
-//    highlightDiv.style.left = (myrect.left + scrollLeft) + 'px';
-//    highlightDiv.style.width = (myrect.right-myrect.left) + 'px';
-//    highlightDiv.style.height = myrect.height + 'px';
-//    highlightDiv.style.zIndex = -1;
-//
-//    highlightDiv.style.margin = highlightDiv.style.padding = '0';
-//    highlightDiv.style.position = 'absolute';
-//
-//    if(style){
-//      for(var key in style){
-//        highlightDiv.style[key] = style[key];
-//      }
-//    } else {
-//      highlightDiv.style.backgroundColor = 'rgba(122,122,122,0.2)';
-//    }
-//
-//    document.body.appendChild(highlightDiv);
-//  }
-
+  return $markers;
 };
 
 exports.unhighlight = function(oa){
-  var highlightDivs = document.getElementsByClassName(oa.id);
-  while(highlightDivs.length){
-    document.body.removeChild(highlightDivs[0]);
+  var $markers = document.getElementsByClassName(oa.id);
+  while($markers.length){
+    $markers[0].parentNode.removeChild($markers[0]);
   }
 };
 
