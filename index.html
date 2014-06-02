@@ -9,22 +9,22 @@
       document.addEventListener('DOMContentLoaded', function(e){
 
         //used if draggable
-        var oa = oaRange.getOa(document.getElementById('draggable'));
-        var range = oaRange.getRange(oa.selection);
-        console.log('selected: ', range.toString());
+        var oa = oaRange.createOa(document.getElementById('draggable'));
+        var restoredOa = oaRange.restoreOa(oa.selection);
+        console.log('selected: ', restoredOa.range.toString());
         //make selection visible to user
-        window.getSelection().addRange(range);
+        window.getSelection().addRange(restoredOa.range);
       
         var oas = [];
 
         //used for text selection
         document.addEventListener('mouseup', function(e){
-          var oa = oaRange.getOa();
+          var oa = oaRange.createOa();
           if(oa){
             oas.push(oa);
             console.log('oa: ', oa);
-            var range = oaRange.getRange(oa.selection);
-            console.log('selected: ', range.toString());
+            var recreatedOa = oaRange.restoreOa(oa.selection);
+            console.log('selected: ', recreatedOa.range.toString());
             oaRange.highlight(oa);
           }
         });

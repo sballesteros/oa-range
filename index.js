@@ -22,7 +22,7 @@ function getElementXpath($el) {
   }
 };
 
-exports.getOa = function($el, id){
+exports.createOa = function($el, id){
   var range;
 
   if($el){
@@ -72,23 +72,13 @@ exports.getOa = function($el, id){
     }
   };
 
-  if(id){
-    oa.id = id;
-  } else {
-    var toHash = Object.keys(oa.selection)
-      .sort()
-      .map(function(x){return oa.selection[x];})
-      .filter(function(x){return x;})
-      .join('-');
-
-    oa.id = crypto.createHash('sha1').update(toHash).digest('hex');
-  }
+  oa.id = (id) ? id:  _getOaId(oa.selection)
 
   return oa;
 };
 
 
-exports.getRange = function(oaSelection){
+exports.restoreOa = function(oaSelection, id){
   var range = document.createRange();
   var $el = _getElementByXPath(oaSelection.xPath);
   var startNode;
@@ -106,7 +96,12 @@ exports.getRange = function(oaSelection){
     range.setEnd(startNode, oaSelection.endOffset);
   }
 
-  return range;
+  return {
+    id: (id) ? id:  _getOaId(oaSelection),
+    range: range,
+    selection: oaSelection
+  };
+
 };
 
 
@@ -176,6 +171,17 @@ exports.unhighlight = function(oa){
   }
 };
 
+
+function _getOaId(oaSelection){
+
+  var toHash = Object.keys(oaSelection)
+    .sort()
+    .map(function(x){return oaSelection[x];})
+    .filter(function(x){return x;})
+    .join('-');
+
+  return crypto.createHash('sha1').update(toHash).digest('hex');
+};
 
 function _getNodeByOffset($root, offset){
 
