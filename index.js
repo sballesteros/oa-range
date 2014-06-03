@@ -131,6 +131,22 @@ exports.highlight = function(oa, $root, style){
 
   var $markers = [];
 
+  var $el;
+  var $ancestor = range.commonAncestorContainer;
+  if ($ancestor.nodeType === 3) {
+    //get closest Element
+    $el = $ancestor.parentElement;
+  } else if($ancestor.nodeType === 1) {
+    $el = $ancestor;
+  };
+
+  //tweak z-index: try to guarantee that text is on top of highlight
+  var $elStyle = window.getComputedStyle($el);
+  if(!$elStyle.position || ( ($elStyle.position !== 'absolute')  && ($elStyle.position !== 'relative'))){
+    $el.style.position = 'relative';
+  }
+  $el.style.zIndex = 2;
+
   for (var i = 0; i < rects.length; i++) {
     var rect = rects[i];
     var $highlightDiv = document.createElement('div');
@@ -139,7 +155,7 @@ exports.highlight = function(oa, $root, style){
     $highlightDiv.style.left = (rect.left + scrollLeft - offsetLeft) + 'px';
     $highlightDiv.style.width = rect.width + 'px';
     $highlightDiv.style.height = rect.height + 'px';
-    $highlightDiv.style.zIndex = -1;
+    $highlightDiv.style.zIndex = 1;
 
     $highlightDiv.style.margin = $highlightDiv.style.padding = '0';
     $highlightDiv.style.position = 'absolute';
